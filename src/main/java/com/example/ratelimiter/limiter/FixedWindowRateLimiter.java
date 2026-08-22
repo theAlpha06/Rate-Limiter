@@ -20,7 +20,6 @@ public class FixedWindowRateLimiter implements RateLimiter {
             requests.put(key, new Window(windowStartTime, 1));
         } else {
             if(window.count + 1 > MAX_REQUESTS) {
-                System.out.println("Can't make a request");
                 return false;
             } else {
                 window.count += 1;
