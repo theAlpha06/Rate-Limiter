@@ -1,10 +1,16 @@
 package com.example.ratelimiter.limiter;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.example.ratelimiter.core.Window;
+import com.example.ratelimiter.store.RateLimitStore;
+import org.springframework.stereotype.Component;
 
+@Component
 public class FixedWindowRateLimiter implements RateLimiter {
-    private final Map<String, Window> requests = new HashMap<>();
+
+    private final RateLimitStore rateLimitStore;
+    public FixedWindowRateLimiter(RateLimitStore rateLimitStore) {
+        this.rateLimitStore = rateLimitStore;
+    }
 
     @Override
     public boolean allow(String key) {
@@ -14,10 +20,10 @@ public class FixedWindowRateLimiter implements RateLimiter {
     public boolean putRequest(String key) {
         long currentTimeStamp = System.currentTimeMillis() / 1000;
         long windowStartTime = (currentTimeStamp / WINDOW_SIZE_SECONDS) * WINDOW_SIZE_SECONDS;
-        Window window = requests.get(key);
+        Window window = rateLimitStore.get(key);
 
         if(window == null || window.timestamp != windowStartTime) {
-            requests.put(key, new Window(windowStartTime, 1));
+            rateLimitStore.put(key, new Window(windowStartTime, 1));
         } else {
             if(window.count + 1 > MAX_REQUESTS) {
                 return false;
@@ -26,15 +32,5 @@ public class FixedWindowRateLimiter implements RateLimiter {
             }
         }
         return true;
-    }
-
-    static class Window {
-        private final long timestamp;
-        private int count;
-
-        Window(long timestamp, int count) {
-            this.timestamp = timestamp;
-            this.count = count;
-        }
     }
 }
