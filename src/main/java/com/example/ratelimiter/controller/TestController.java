@@ -1,8 +1,6 @@
 package com.example.ratelimiter.controller;
 
-import com.example.ratelimiter.limiter.FixedWindowRateLimiter;
 import com.example.ratelimiter.limiter.RateLimiter;
-import com.example.ratelimiter.store.RateLimitStore;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
