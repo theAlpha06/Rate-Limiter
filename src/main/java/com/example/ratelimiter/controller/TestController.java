@@ -1,6 +1,7 @@
 package com.example.ratelimiter.controller;
 
 import com.example.ratelimiter.limiter.RateLimiter;
+import com.example.ratelimiter.service.RateLimitService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,16 +12,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api")
 public class TestController {
-    private final RateLimiter rateLimiter;
-
-    public TestController(RateLimiter rateLimiter) {
-        this.rateLimiter = rateLimiter;
+    private final RateLimitService rateLimitService;
+    public TestController(RateLimitService rateLimitService) {
+        this.rateLimitService = rateLimitService;
     }
 
     @GetMapping("/test")
     public ResponseEntity<String> test(@RequestParam String userId) {
-        if(!rateLimiter.allow(userId)) {
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("Please try after sometime");
+        boolean allow = rateLimitService.allow(userId);
+
+        if(!allow) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("Rate limit exceeded");
         }
         return ResponseEntity.ok("OK");
     }

@@ -1,4 +1,4 @@
 rate-limiter:
     algorithm: FIXED_WINDOW
-    limit: 7
+    limit: 10
     window-size-seconds: 60
