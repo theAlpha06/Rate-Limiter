@@ -26,17 +26,20 @@ public class FixedWindowRateLimiter implements RateLimiter {
     private boolean putRequest(String key) {
         long currentTimeStamp = timeProvider.currentTimeSeconds();
         long windowStartTime = (currentTimeStamp / rateLimitConfig.getWindowSizeSeconds()) * rateLimitConfig.getWindowSizeSeconds();
-        Window window = rateLimitStore.get(key);
 
-        if(window == null || window.getWindowStart() != windowStartTime) {
-            rateLimitStore.put(key, new Window(windowStartTime, 1));
-        } else {
-            if(window.getCount() >= rateLimitConfig.getLimit()) {
-                return false;
-            } else {
-                window.increment();
-            }
-        }
-        return true;
+        Window window = rateLimitStore.compute(
+                key,
+                currentWindow -> {
+                    if(currentWindow == null || currentWindow.getWindowStart() != windowStartTime) {
+                        return new Window(windowStartTime, 1);
+                    }
+
+                    if(currentWindow.getCount() > rateLimitConfig.getLimit()) {
+                        return currentWindow;
+                    }
+                    return currentWindow.increment();
+                }
+        );
+        return window.getCount() <= rateLimitConfig.getLimit();
     }
 }

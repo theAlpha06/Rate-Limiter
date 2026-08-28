@@ -3,7 +3,7 @@ package com.example.ratelimiter.core;
 public class Window {
 
     private final long windowStart;
-    private int count;
+    private final int count;
 
     public Window(long windowStart, int count) {
         this.windowStart = windowStart;
@@ -18,7 +18,7 @@ public class Window {
         return count;
     }
 
-    public void increment() {
-        count++;
+    public Window increment() {
+        return new Window(windowStart, count + 1);
     }
 }

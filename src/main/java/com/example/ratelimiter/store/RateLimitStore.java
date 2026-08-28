@@ -2,8 +2,8 @@ package com.example.ratelimiter.store;
 
 import com.example.ratelimiter.core.Window;
 
-public interface RateLimitStore {
-    Window get(String key);
+import java.util.function.UnaryOperator;
 
-    void put (String key, Window window);
+public interface RateLimitStore {
+    Window compute(String key, UnaryOperator<Window> operator);
 }

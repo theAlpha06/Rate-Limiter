@@ -3,7 +3,6 @@ package com.example.ratelimiter.limiter;
 import com.example.ratelimiter.core.Algorithm;
 import com.example.ratelimiter.core.RateLimitConfig;
 import com.example.ratelimiter.core.TimeProvider;
-import com.example.ratelimiter.core.Window;
 import com.example.ratelimiter.store.InMemoryRateLimitStore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
