@@ -14,23 +14,11 @@ public class RateLimiterProperties {
         return algorithm;
     }
 
-    public void setAlgorithm(Algorithm algorithm) {
-        this.algorithm = algorithm;
-    }
-
     public int getLimit() {
         return limit;
     }
 
-    public void setLimit(int limit) {
-        this.limit = limit;
-    }
-
     public long getWindowSizeSeconds() {
         return windowSizeSeconds;
-    }
-
-    public void setWindowSizeSeconds(long windowSizeSeconds) {
-        this.windowSizeSeconds = windowSizeSeconds;
     }
 }
