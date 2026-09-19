@@ -1,45 +1,47 @@
 package com.example.ratelimiter.limiter;
 
-import com.example.ratelimiter.core.RateLimitConfig;
-import com.example.ratelimiter.core.TimeProvider;
-import com.example.ratelimiter.core.Window;
+import com.example.ratelimiter.core.*;
 import com.example.ratelimiter.store.RateLimitStore;
 import org.springframework.stereotype.Component;
 
 @Component
 public class FixedWindowRateLimiter implements RateLimiter {
 
-    private final RateLimitStore rateLimitStore;
-    private final RateLimitConfig rateLimitConfig;
+    private final RateLimitStore store;
     private final TimeProvider timeProvider;
-    public FixedWindowRateLimiter(RateLimitStore rateLimitStore, RateLimitConfig rateLimitConfig, TimeProvider timeProvider) {
-        this.rateLimitStore = rateLimitStore;
-        this.rateLimitConfig = rateLimitConfig;
+
+    public FixedWindowRateLimiter(RateLimitStore store, TimeProvider timeProvider) {
+        this.store = store;
         this.timeProvider = timeProvider;
     }
 
+    @Override public Algorithm algorithm() { return Algorithm.FIXED_WINDOW; }
+
     @Override
-    public boolean allow(String key) {
-        return putRequest(key);
-    }
+    public RateLimitDecision tryAcquire(String key, RateLimitPolicy policy, int cost) {
+        long now   = timeProvider.currentTimeSeconds();
+        long size  = policy.windowSizeSeconds();
+        int  limit = policy.limit();
+        long windowStart = (now / size) * size;
+        long resetAt = windowStart + size;
 
-    private boolean putRequest(String key) {
-        long currentTimeStamp = timeProvider.currentTimeSeconds();
-        long windowStartTime = (currentTimeStamp / rateLimitConfig.getWindowSizeSeconds()) * rateLimitConfig.getWindowSizeSeconds();
+        RateLimitDecision[] out = new RateLimitDecision[1];
 
-        Window window = rateLimitStore.compute(
-                key,
-                currentWindow -> {
-                    if(currentWindow == null || currentWindow.getWindowStart() != windowStartTime) {
-                        return new Window(windowStartTime, 1);
-                    }
+        store.compute(key, existing -> {
+            Window w = (existing instanceof Window win && win.windowStart() == windowStart)
+                    ? win
+                    : new Window(windowStart, 0);
 
-                    if(currentWindow.getCount() > rateLimitConfig.getLimit()) {
-                        return currentWindow;
-                    }
-                    return currentWindow.increment();
-                }
-        );
-        return window.getCount() <= rateLimitConfig.getLimit();
+            if (w.count() + cost > limit) {
+                out[0] = RateLimitDecision.reject(limit, resetAt, resetAt - now);
+                return w;
+            }
+
+            Window updated = w.plus(cost);
+            out[0] = RateLimitDecision.allow(limit, limit - updated.count(), resetAt);
+            return updated;
+        });
+
+        return out[0];
     }
 }

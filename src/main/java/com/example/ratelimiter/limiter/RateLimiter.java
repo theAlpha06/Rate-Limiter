@@ -1,6 +1,10 @@
 package com.example.ratelimiter.limiter;
 
-public interface RateLimiter {
+import com.example.ratelimiter.core.Algorithm;
+import com.example.ratelimiter.core.RateLimitDecision;
+import com.example.ratelimiter.core.RateLimitPolicy;
 
-    boolean allow(String key);
+public interface RateLimiter {
+    RateLimitDecision tryAcquire(String key, RateLimitPolicy policy, int cost);
+    Algorithm algorithm();
 }

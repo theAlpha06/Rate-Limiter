@@ -3,20 +3,30 @@ package com.example.ratelimiter.limiter;
 import com.example.ratelimiter.core.Algorithm;
 import org.springframework.stereotype.Component;
 
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+
 @Component
-public class RateLimiterFactory{
+public class RateLimiterFactory {
 
-    private final FixedWindowRateLimiter fixedWindowRateLimiter;
+    private final Map<Algorithm, RateLimiter> limiters = new EnumMap<>(Algorithm.class);
 
-    public RateLimiterFactory(FixedWindowRateLimiter fixedWindowRateLimiter) {
-        this.fixedWindowRateLimiter = fixedWindowRateLimiter;
+    public RateLimiterFactory(List<RateLimiter> rateLimiters) {
+        for (RateLimiter limiter : rateLimiters) {
+            RateLimiter previous = limiters.put(limiter.algorithm(), limiter);
+            if (previous != null) {
+                throw new IllegalStateException("Two RateLimiter beans claim " + limiter.algorithm());
+            }
+        }
     }
 
-    public RateLimiter getRateLimiter(Algorithm algorithm) {
-        if(algorithm == Algorithm.FIXED_WINDOW) {
-            return fixedWindowRateLimiter;
+    public RateLimiter get(Algorithm algorithm) {
+        RateLimiter limiter = limiters.get(algorithm);
+        if (limiter == null) {
+            throw new IllegalStateException(
+                    "No RateLimiter for " + algorithm + ". Available: " + limiters.keySet());
         }
-
-        return null;
+        return limiter;
     }
 }

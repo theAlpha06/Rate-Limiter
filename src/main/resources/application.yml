@@ -1,4 +1,14 @@
 rate-limiter:
-    algorithm: FIXED_WINDOW
-    limit: 10
-    window-size-seconds: 60
+    policies:
+        login:
+            algorithm: FIXED_WINDOW
+            limit: 5
+            window-size-seconds: 300
+        api-default:
+            algorithm: TOKEN_BUCKET
+            limit: 100
+            window-size-seconds: 60
+        upload:
+            algorithm: LEAKY_BUCKET
+            limit: 10
+            window-size-seconds: 60
