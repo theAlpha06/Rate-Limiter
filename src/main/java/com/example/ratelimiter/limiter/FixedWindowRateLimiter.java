@@ -32,7 +32,7 @@ public class FixedWindowRateLimiter implements RateLimiter {
                     ? win
                     : new Window(windowStart, 0);
 
-            if (w.count() + cost > limit) {
+            if ((long)w.count() + cost > limit) {
                 out[0] = RateLimitDecision.reject(limit, resetAt, resetAt - now);
                 return w;
             }
