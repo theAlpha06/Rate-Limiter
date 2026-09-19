@@ -28,7 +28,7 @@ public class FixedWindowRateLimiter implements RateLimiter {
         RateLimitDecision[] out = new RateLimitDecision[1];
 
         store.compute(key, existing -> {
-            Window w = (existing instanceof Window win && win.windowStart() == windowStart)
+            Window w = (existing instanceof Window win && win.windowStart() >= windowStart)
                     ? win
                     : new Window(windowStart, 0);
 
