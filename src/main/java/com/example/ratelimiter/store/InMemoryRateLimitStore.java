@@ -12,11 +12,6 @@ public class InMemoryRateLimitStore implements RateLimitStore {
 
     private final Map<String, RateLimitState> states = new ConcurrentHashMap<>();
 
-    /**
-     * {@code ConcurrentHashMap.compute} locks only the bin this key hashes to, so
-     * requests for different keys run in parallel, and it applies the function
-     * exactly once — the guarantee {@link RateLimitStore#compute} requires.
-     */
     @Override
     public RateLimitState compute(String key, UnaryOperator<RateLimitState> operator) {
         return states.compute(key, (k, current) -> operator.apply(current));
